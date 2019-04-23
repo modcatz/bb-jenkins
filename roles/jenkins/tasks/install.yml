@@ -17,23 +17,38 @@
     shell: "/bin/false"
     state: present
 
-- name: Add Jenkins key
+- name: Add Jenkins/Docker key
   apt_key:
-    url: "https://pkg.jenkins.io/debian-stable/jenkins.io.key"
+    url: "{{ item }}"
     state: present
+  with_items:
+    - "https://download.docker.com/linux/ubuntu/gpg"
+    - "https://pkg.jenkins.io/debian-stable/jenkins.io.key"
 
-- name: Add Jenkins repository
+- name: Add Jenkins/Docker repository
   apt_repository:
-    repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+    repo: "{{ item }}"
     state: present
+  with_items:
+    - "deb https://pkg.jenkins.io/debian-stable binary/"
+    - "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
 
-- name: Install Jenkins binary package
+- name: Install Jenkins/Docker package
   apt:
-    name: "jenkins={{ jenkins_version }}"
+    name: "{{ item }}"
     force: yes
     update_cache: yes
+  with_items:
+    - "jenkins={{ jenkins_version }}"
+    - "docker-ce"
 
-- name: Configuration file is up to date (config.xml)
+- name: Add Jenkins user to docker group
+  user:
+    name: jenkins
+    groups: docker
+    append: yes
+
+- name: Make sure configuration file is up to date (config.xml)
   copy:
     src: "global-config.xml"
     dest: "{{ jenkins_home }}/config.xml"
@@ -60,7 +75,16 @@
     regexp: '^JAVA_ARGS='
     line: "JAVA_ARGS=\"{{ jenkins_java_opts }}\""
 
-- name: Start & Enable Jenkins
+- name: Add pre-configured jobs
+  copy:
+    src: "jobs/"
+    dest: "{{ jenkins_home }}/jobs/"
+    mode: 0777
+    directory_mode: 0777
+    owner: "{{ jenkins_owner }}"
+    group: "{{ jenkins_group }}"
+
+- name: Restart & Enable Jenkins
   systemd:
     name: jenkins
     state: restarted
