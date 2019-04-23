@@ -1,0 +1,7 @@
+#list of servers
+
+[vagrant]
+#vagrant boxes
+
+jenkins    ansible_host=10.2.2.2
+

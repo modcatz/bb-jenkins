@@ -1,0 +1,71 @@
+- name: Install java
+  apt:
+    name:
+      - openjdk-8-jdk
+    state: present
+
+- name: Create Jenkins group
+  group:
+    name: "{{ jenkins_group }}"
+    state: present
+
+- name: Create Jenkins user
+  user:
+    name: "{{ jenkins_owner }}"
+    group: "{{ jenkins_group }}"
+    home: "{{ jenkins_home }}"
+    shell: "/bin/false"
+    state: present
+
+- name: Add Jenkins key
+  apt_key:
+    url: "https://pkg.jenkins.io/debian-stable/jenkins.io.key"
+    state: present
+
+- name: Add Jenkins repository
+  apt_repository:
+    repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+    state: present
+
+- name: Install Jenkins binary package
+  apt:
+    name: "jenkins={{ jenkins_version }}"
+    force: yes
+    update_cache: yes
+
+- name: Configuration file is up to date (config.xml)
+  copy:
+    src: "global-config.xml"
+    dest: "{{ jenkins_home }}/config.xml"
+    mode: 0644
+    owner: "{{ jenkins_owner }}"
+    group: "{{ jenkins_group }}"
+
+
+- name: Set JENKINS_HOME
+  lineinfile:
+    dest: /etc/default/jenkins
+    line: "JENKINS_HOME={{ jenkins_home }}"
+    regexp: '^JENKINS_HOME='
+
+- name: Set Jenkins port
+  lineinfile:
+    dest: /etc/default/jenkins
+    regexp: '^HTTP_PORT='
+    line: "HTTP_PORT={{ jenkins_port }}"
+
+- name: Set Jenkins command line options
+  lineinfile:
+    dest: /etc/default/jenkins
+    regexp: '^JAVA_ARGS='
+    line: "JAVA_ARGS=\"{{ jenkins_java_opts }}\""
+
+- name: Start & Enable Jenkins
+  systemd:
+    name: jenkins
+    state: restarted
+    enabled: true
+
+- name: Waiting for jenkins to restart
+  pause:
+    minutes: 1

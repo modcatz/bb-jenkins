@@ -1,0 +1,8 @@
+# main tasks
+
+- name: Deploy vagrant box with jenkins 
+  hosts: vagrant
+
+  roles:
+    - jenkins
+

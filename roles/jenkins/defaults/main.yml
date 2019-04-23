@@ -1,0 +1,15 @@
+---
+# defaults file for jenkins
+
+jenkins_version: "2.164.2"
+
+jenkins_owner: "jenkins"
+jenkins_group: "jenkins"
+jenkins_home: "/var/lib/jenkins"
+jenkins_port: "8085"
+jenkins_java_opts: "-Djenkins.install.runSetupWizard=false"
+
+jenkins_plugins:
+  - git
+  - workflow-aggregator
+  - docker-workflow
