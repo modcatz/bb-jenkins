@@ -16,8 +16,11 @@
 - Check out repo
 - Make sure to have installed the dependencies
 - Run `vagrant up jenkins`
-- Run Ansible: `ansible-playbook -i inventory site.yml -k -b -K -u vagrant` 
+- Run Ansible: `ansible-playbook -i inventory site.yml -k -b -K -u vagrant`
 Password: `vagrant`
+- Go to Jenkins UI: http://10.2.2.2:8085/ and run the build
+- Test your application: http://10.2.2.2:8080/sample
+
 
 ## Full description
 
